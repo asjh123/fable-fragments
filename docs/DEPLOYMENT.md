@@ -1,6 +1,6 @@
 # GitHub Pages + Supabase 部署
 
-目标地址：`https://asjh123.github.io/fable-fragments/`。工作流只在三个仓库 Secret 都存在时构建：
+线上地址：`https://asjh123.github.io/fable-fragments/`。工作流只在三个仓库 Secret 都存在时构建：
 
 - `SUPABASE_URL`：项目 URL；
 - `SUPABASE_PUBLISHABLE_KEY`：publishable 或旧版 anon key，不能使用 secret/service-role key；

@@ -28,8 +28,8 @@
 
 ## 尚未验证与说明
 
-- 没有真实 Supabase 凭据，因此未执行真实邮箱 OTP/Magic Link、远端 RLS、真实内容下载和两台物理设备异地互通。当前同步结论来自可控内存适配器，不能表述为真实云端已验收。
-- 没有部署到 GitHub Pages，也没有修改任何真实 Supabase 项目或云端数据。
+- 已于2026-10-15部署到 `https://asjh123.github.io/fable-fragments/`：HTTPS返回200，Manifest子路径正确，构建包含目标Supabase公开配置且不含`service_role`。
+- 已在真实Supabase应用迁移、关闭公开注册、创建并确认唯一邮箱用户，并以匿名角色读取两条已发布内容。真实邮箱OTP/Magic Link和两台物理设备的事件往返仍需用户完成最后验收。
 - 没有在真实 iOS/Android 上安装 PWA；移动浏览器尺寸和离线 Service Worker 已自动验证。
 - 并行执行两个 Vite 构建时曾因共同写入 `dist` 触发 Windows `EBUSY`；改为串行后根路径与子路径均通过。这是验证命令竞争，不是产品运行故障。
 - 当前 SVG PWA 图标需在正式发布前做真机兼容性验收。
