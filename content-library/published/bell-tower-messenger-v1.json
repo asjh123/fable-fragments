@@ -1,0 +1,157 @@
+{
+  "contentId": "bell-tower-messenger",
+  "version": 1,
+  "schemaVersion": 1,
+  "status": "published",
+  "hiddenTitle": "钟楼上的第二封信",
+  "revealedTitle": "贝叶斯更新：让判断随证据改变",
+  "domain": "统计学",
+  "subdomain": "不确定性推断",
+  "difficulty": "研究生",
+  "estimatedMinutes": 17,
+  "forbiddenBeforeReveal": [
+    "贝叶斯",
+    "先验",
+    "后验"
+  ],
+  "fragments": [
+    {
+      "fragmentId": "tower-opening",
+      "kind": "opening",
+      "eyebrow": "第一幕 · 旧地图",
+      "title": "两个山谷，哪一个会起雾？",
+      "body": "守塔人每天决定是否点亮信号灯。旧地图记载：东谷十天有七天起雾，西谷十天只有两天。清晨尚无消息时，他更担心东谷。这不是确信，只是根据过去经验给两个可能性不同的起点。",
+      "estimatedMinutes": 3
+    },
+    {
+      "fragmentId": "tower-conflict",
+      "kind": "conflict",
+      "eyebrow": "第二幕 · 信使",
+      "title": "一封并不完美的报告",
+      "body": "信使送来消息：“山脚的铜铃响了。”然而铜铃并不可靠：有雾时常响，无雾时也偶尔被风吹响。年轻人听见“铃响”便断言一定起雾。守塔人却先问：如果真的起雾，铃响有多常见？如果没有起雾，铃又有多常误响？",
+      "estimatedMinutes": 3
+    },
+    {
+      "fragmentId": "tower-clue",
+      "kind": "clue",
+      "eyebrow": "第三幕 · 更新",
+      "title": "新消息不能抹掉旧地图",
+      "body": "守塔人把旧地图提供的起点与铜铃在不同情形下的可靠程度放在一起比较。铃声让“有雾”的判断上升，但上升多少取决于两件事：原来哪种情形更常见，以及这条消息在不同情形下有多容易出现。第二封信到来后，他又用同样的方法更新，而不是从零开始。",
+      "estimatedMinutes": 3
+    },
+    {
+      "fragmentId": "tower-reveal",
+      "kind": "reveal",
+      "eyebrow": "第四幕 · 揭晓",
+      "title": "原来讲的是贝叶斯更新",
+      "body": "旧地图代表先验分布，铜铃的可靠程度构成似然，新消息到来后形成后验分布。贝叶斯公式把“数据在某个假设成立时出现的概率”与“看到数据后假设成立的概率”严格地区分开。",
+      "estimatedMinutes": 2
+    },
+    {
+      "fragmentId": "tower-explanation",
+      "kind": "explanation",
+      "eyebrow": "第五幕 · 公式背后",
+      "title": "不是相信故事，而是公开假设",
+      "body": "【事实】贝叶斯分析使用概率描述未知量的不确定性，并用观测数据通过贝叶斯规则更新。后验分布正比于先验分布与似然的乘积；完整概率需要证据项进行归一化。结果依赖先验和数据模型，因此成熟分析不仅报告一个答案，还检查先验是否合理、模型是否能解释数据以及结论对假设是否敏感。",
+      "estimatedMinutes": 3
+    },
+    {
+      "fragmentId": "tower-mapping",
+      "kind": "mapping",
+      "eyebrow": "第六幕 · 研发迁移",
+      "title": "故障判断中的旧经验与新证据",
+      "body": "旧地图对应历史失效率或工程经验；铜铃对应某项检测结果；铃的误响对应假阳性；更新后的雾情判断对应故障假设的更新概率。【推论】在电容故障分析中，可以把历史批次信息、失效机理知识和当前测量结合起来排序假设，但这不会自动证明因果关系。样本偏差、测试选择和错误模型仍可能让结论失真。",
+      "estimatedMinutes": 2
+    },
+    {
+      "fragmentId": "tower-quiz",
+      "kind": "quiz",
+      "eyebrow": "第七幕 · 小测",
+      "title": "一声铃响意味着什么？",
+      "body": "选择最准确的判断：观察到一项检测阳性后，要判断故障概率，既需要检测在有故障和无故障时的表现，也需要故障原本出现的可能性。",
+      "estimatedMinutes": 1
+    }
+  ],
+  "conceptExplanation": "【事实】贝叶斯更新将未知量的先验分布与观测数据的似然结合，得到后验分布。形式上，后验与“似然×先验”成正比。它迫使分析者区分P(证据｜假设)与P(假设｜证据)，也使原有知识如何进入分析变得显式。",
+  "metaphorMappings": [
+    {
+      "metaphor": "旧地图上的起雾频率",
+      "meaning": "获得当前证据之前的先验信息"
+    },
+    {
+      "metaphor": "铜铃在有雾和无雾时的表现",
+      "meaning": "观测模型或似然"
+    },
+    {
+      "metaphor": "收到信后重新判断",
+      "meaning": "依据证据形成后验分布"
+    },
+    {
+      "metaphor": "第二封信继续更新",
+      "meaning": "新的后验可以成为下一次分析的先验，但需要条件一致"
+    }
+  ],
+  "applicableBoundaries": [
+    "后验结论以给定模型、数据质量和先验假设为条件，不是脱离假设的客观真值。",
+    "贝叶斯更新处理不确定性，不会自动消除选择偏差、测量误差或混杂因素。",
+    "把一次分析的后验直接移植到不同产品、工况或人群，需要验证可比性。"
+  ],
+  "commonMisunderstandings": [
+    "误解：先验只能是主观猜测。它也可以来自历史数据、物理约束或分层模型，但来源必须公开。",
+    "误解：新数据一定会完全压倒先验。影响程度取决于数据量、信息强度和模型。",
+    "误解：后验概率能够自动证明某因素导致故障。概率更新与因果识别是不同问题。"
+  ],
+  "engineeringTransfer": "【建议】在故障树讨论中，为每个候选机理分别记录：原有发生依据、当前证据在该机理成立时是否常见、在替代机理下是否也可能出现，以及还缺什么区分性试验。只有具备可信概率模型时再进行数值化；否则保留定性更新并标记不确定性。",
+  "quiz": {
+    "question": "检测结果为阳性后，为什么不能直接把检测准确率当作故障概率？",
+    "options": [
+      "因为任何检测结果都没有价值",
+      "因为还需要结合故障原本的发生可能性以及检测的假阳性表现",
+      "因为历史信息永远比新数据可靠",
+      "因为概率只能用于金融领域"
+    ],
+    "correctIndex": 1,
+    "explanation": "从P(阳性｜故障)推到P(故障｜阳性)还需要基础发生率以及阳性在其他情形下出现的可能性。二者不能交换。"
+  },
+  "sources": [
+    {
+      "title": "NIST/SEMATECH e-Handbook of Statistical Methods — Bayesian Methods",
+      "publisher": "National Institute of Standards and Technology",
+      "url": "https://www.itl.nist.gov/div898/handbook/toolaids/pff/E-Handbook.pdf",
+      "sourceType": "标准机构资料"
+    },
+    {
+      "title": "Likelihood, Prior, Posterior",
+      "publisher": "Princeton University",
+      "url": "https://www.princeton.edu/~umueller/HOE.pdf",
+      "sourceType": "大学教材"
+    }
+  ],
+  "sourceReferences": [
+    {
+      "title": "NIST/SEMATECH e-Handbook of Statistical Methods — Bayesian Methods",
+      "publisher": "National Institute of Standards and Technology",
+      "url": "https://www.itl.nist.gov/div898/handbook/toolaids/pff/E-Handbook.pdf",
+      "sourceType": "标准机构资料"
+    },
+    {
+      "title": "Likelihood, Prior, Posterior",
+      "publisher": "Princeton University",
+      "url": "https://www.princeton.edu/~umueller/HOE.pdf",
+      "sourceType": "大学教材"
+    }
+  ],
+  "factClaims": [
+    "【事实】贝叶斯更新将未知量的先验分布与观测数据的似然结合，得到后验分布。形式上，后验与“似然×先验”成正比。它迫使分析者区分P(证据｜假设)与P(假设｜证据)，也使原有知识如何进入分析变得显式。"
+  ],
+  "inferences": [
+    "【建议】在故障树讨论中，为每个候选机理分别记录：原有发生依据、当前证据在该机理成立时是否常见、在替代机理下是否也可能出现，以及还缺什么区分性试验。只有具备可信概率模型时再进行数值化；否则保留定性更新并标记不确定性。"
+  ],
+  "factCheckStatus": "【事实】",
+  "generatedAt": "2026-10-13T00:00:00.000Z",
+  "reviewedAt": "2026-10-13T00:00:00.000Z",
+  "publishedAt": "2026-10-13T00:00:00.000Z",
+  "contentHash": "e11f2bde4a18be9dc833f844bb86ef65d11bb75e5f44c38dd6a1a78477da344c",
+  "createdAt": "2026-10-13T00:00:00.000Z",
+  "updatedAt": "2026-10-13T00:00:00.000Z"
+}

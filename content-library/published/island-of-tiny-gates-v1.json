@@ -1,0 +1,174 @@
+{
+  "contentId": "island-of-tiny-gates",
+  "version": 1,
+  "schemaVersion": 1,
+  "status": "published",
+  "hiddenTitle": "岛上那些会消失的小门",
+  "revealedTitle": "金属化薄膜电容的自愈机制",
+  "domain": "汽车薄膜电容",
+  "subdomain": "可靠性与失效物理",
+  "difficulty": "研究生",
+  "estimatedMinutes": 18,
+  "forbiddenBeforeReveal": [
+    "电容",
+    "自愈",
+    "金属化膜",
+    "介电击穿"
+  ],
+  "fragments": [
+    {
+      "fragmentId": "island-opening",
+      "kind": "opening",
+      "eyebrow": "第一幕 · 海雾",
+      "title": "守门人的奇怪规矩",
+      "body": "海上有一座由无数薄层叠成的岛。岛的两岸之间始终维持着强烈的潮差，守门人却把连接两岸的银色道路铺得极薄。学徒问：“道路越厚不是越结实吗？”守门人摇头：“这里真正危险的不是道路断裂，而是某个微小缺口突然把两岸接通。道路太厚，整座岛会把力量都灌进那个缺口。”",
+      "estimatedMinutes": 3
+    },
+    {
+      "fragmentId": "island-conflict",
+      "kind": "conflict",
+      "eyebrow": "第二幕 · 闪光",
+      "title": "一个缺口为何没有毁掉整座岛",
+      "body": "一天，某个看不见的薄弱点突然发出短促闪光。附近的银路瞬间退开，缺口周围留下一个没有道路的白色小圈。潮差仍在，远处道路仍能运输，事故却在扩散前停住了。学徒以为岛恢复得毫无代价，守门人却在账本上画掉一粒极小的面积。",
+      "estimatedMinutes": 3
+    },
+    {
+      "fragmentId": "island-clue",
+      "kind": "clue",
+      "eyebrow": "第三幕 · 代价",
+      "title": "“活下来”不等于“没有受伤”",
+      "body": "后来闪光偶尔再次出现。每次留下的白圈都很小，但白圈越来越多。岛依然工作，能使用的银路面积却缓慢减少。更麻烦的是，有的闪光干净利落，有的留下焦痕与气体；如果条件失控，局部事件也可能演变成连续损伤。守门人说：“这是一种把局部牺牲换成整体继续工作的设计，不是一张免于失效的护身符。”",
+      "estimatedMinutes": 3
+    },
+    {
+      "fragmentId": "island-reveal",
+      "kind": "reveal",
+      "eyebrow": "第四幕 · 揭晓",
+      "title": "原来讲的是自愈",
+      "body": "岛是金属化薄膜电容，薄层是聚合物介质，银路是蒸镀金属电极，潮差是施加电压。局部介电击穿产生放电通道和高温，使缺陷周围的薄金属层移除，形成绝缘隔离区，局部电弧得以熄灭。这个过程通常称为自愈。",
+      "estimatedMinutes": 2
+    },
+    {
+      "fragmentId": "island-explanation",
+      "kind": "explanation",
+      "eyebrow": "第五幕 · 原理",
+      "title": "为什么薄电极反而带来韧性",
+      "body": "【事实】公开研究和制造商技术资料均描述了局部击穿、金属层移除与电弧熄灭这一基本过程。薄金属层使故障点附近电极可以被快速清除，隔离导电通道，同时保留大部分有效面积。单次事件会损失局部有效电极面积，因此“功能恢复”不等于材料回到原状。【推论】器件层面的后果还取决于膜材、方阻、图案、局部能量、温度、压力和缺陷分布，不能只凭一次可见闪光判断寿命。",
+      "estimatedMinutes": 3
+    },
+    {
+      "fragmentId": "island-mapping",
+      "kind": "mapping",
+      "eyebrow": "第六幕 · 映射",
+      "title": "把寓言放回工程现场",
+      "body": "银路对应金属化电极；潮差对应电场作用；微小缺口对应局部弱点；白色小圈对应被隔离的无金属区域；账本上的面积损失对应有效面积和容量的微小变化。工程分析时，应把“能否清除故障”“每次事件的能量与面积”“事件是否累积”“是否存在持续局放或热失控条件”分开评估。不要把自愈直接等同于绝对安全或无限寿命。",
+      "estimatedMinutes": 3
+    },
+    {
+      "fragmentId": "island-quiz",
+      "kind": "quiz",
+      "eyebrow": "第七幕 · 小测",
+      "title": "守门人真正做了什么？",
+      "body": "选择最准确的理解：自愈不是把已经受损的材料恢复原样，而是通过局部隔离故障通道，让器件的大部分区域继续承担功能。完成选择后查看解释。",
+      "estimatedMinutes": 1
+    }
+  ],
+  "conceptExplanation": "【事实】金属化薄膜电容发生局部介质击穿时，故障点附近的薄金属电极会在放电和热作用下被移除，形成与周边电极隔离的区域，使局部放电通道熄灭并允许器件继续工作。被清除的区域不再贡献原有有效面积，因此过程存在代价。自愈结果受电极厚度与方阻、介质、施加电压、局部能量及结构设计等因素影响。",
+  "metaphorMappings": [
+    {
+      "metaphor": "由薄层叠成的岛",
+      "meaning": "卷绕或叠层形成的薄膜介质结构"
+    },
+    {
+      "metaphor": "极薄的银色道路",
+      "meaning": "真空蒸镀形成的薄金属电极"
+    },
+    {
+      "metaphor": "两岸的潮差",
+      "meaning": "电极之间持续存在的电位差和电场"
+    },
+    {
+      "metaphor": "闪光后的白色小圈",
+      "meaning": "故障点周围电极材料被移除后形成的隔离区域"
+    },
+    {
+      "metaphor": "账本上划掉的面积",
+      "meaning": "局部有效面积损失以及可能累积的参数变化"
+    }
+  ],
+  "applicableBoundaries": [
+    "该解释描述金属化薄膜结构的典型局部清除机制，不代表所有介质与电极结构都具有同样行为。",
+    "自愈成功不等于器件没有老化，也不保证任何工况下都不会失效。",
+    "从单次自愈现象不能直接推断整只器件剩余寿命，需要结合任务剖面、统计数据和失效分析。"
+  ],
+  "commonMisunderstandings": [
+    "误解：自愈会把受损材料恢复成原来的状态。实际是局部隔离与功能保留。",
+    "误解：自愈次数越多越说明器件可靠。事件频率升高也可能提示缺陷、应力或老化问题。",
+    "误解：有自愈能力就无需关注局部放电、温升和保护设计。"
+  ],
+  "engineeringTransfer": "【建议】在研发评审中将“单次事件能否成功隔离”“事件能量与清除面积”“事件随时间的统计变化”“对容量、损耗和温升的累积影响”列成不同指标。示例没有提供可直接用于定型的阈值；具体限值必须依据企业试验、任务剖面、器件结构以及适用标准验证。",
+  "quiz": {
+    "question": "以下哪一项最准确地描述金属化薄膜电容的自愈？",
+    "options": [
+      "受损介质重新生长并恢复原状",
+      "移除故障点附近的薄电极，使局部导电通道被隔离",
+      "把全部故障能量永久储存在介质中",
+      "保证器件之后不会再次发生局部击穿"
+    ],
+    "correctIndex": 1,
+    "explanation": "自愈的核心是故障点附近电极材料被移除并形成隔离区，使局部放电熄灭。它保留了大部分功能，但不是材料再生，也不构成无限寿命保证。"
+  },
+  "sources": [
+    {
+      "title": "Film Capacitors — General Technical Information, Self-healing",
+      "publisher": "TDK Electronics",
+      "url": "https://www.tdk-electronics.tdk.com/download/537974/480aeb04c789e45ef5bb9681513474ba/pdf-generaltechnicalinformation.pdf",
+      "sourceType": "官方技术资料"
+    },
+    {
+      "title": "Self-healing of capacitors with metallized film technology: experimental observations and theoretical model",
+      "publisher": "Journal of Electrostatics",
+      "url": "https://doi.org/10.1016/S0304-3886(01)00138-3",
+      "sourceType": "论文"
+    },
+    {
+      "title": "Controlled Self-Healing of Power Film Capacitors",
+      "publisher": "KYOCERA AVX",
+      "url": "https://www.kyocera-avx.com/docs/techinfo/FilmLeadedPowerSurfaceMount/Controlled-Self-Healing-Power-Film-Capacitors.pdf",
+      "sourceType": "官方技术资料"
+    }
+  ],
+  "sourceReferences": [
+    {
+      "title": "Film Capacitors — General Technical Information, Self-healing",
+      "publisher": "TDK Electronics",
+      "url": "https://www.tdk-electronics.tdk.com/download/537974/480aeb04c789e45ef5bb9681513474ba/pdf-generaltechnicalinformation.pdf",
+      "sourceType": "官方技术资料"
+    },
+    {
+      "title": "Self-healing of capacitors with metallized film technology: experimental observations and theoretical model",
+      "publisher": "Journal of Electrostatics",
+      "url": "https://doi.org/10.1016/S0304-3886(01)00138-3",
+      "sourceType": "论文"
+    },
+    {
+      "title": "Controlled Self-Healing of Power Film Capacitors",
+      "publisher": "KYOCERA AVX",
+      "url": "https://www.kyocera-avx.com/docs/techinfo/FilmLeadedPowerSurfaceMount/Controlled-Self-Healing-Power-Film-Capacitors.pdf",
+      "sourceType": "官方技术资料"
+    }
+  ],
+  "factClaims": [
+    "【事实】金属化薄膜电容发生局部介质击穿时，故障点附近的薄金属电极会在放电和热作用下被移除，形成与周边电极隔离的区域，使局部放电通道熄灭并允许器件继续工作。被清除的区域不再贡献原有有效面积，因此过程存在代价。自愈结果受电极厚度与方阻、介质、施加电压、局部能量及结构设计等因素影响。"
+  ],
+  "inferences": [
+    "【建议】在研发评审中将“单次事件能否成功隔离”“事件能量与清除面积”“事件随时间的统计变化”“对容量、损耗和温升的累积影响”列成不同指标。示例没有提供可直接用于定型的阈值；具体限值必须依据企业试验、任务剖面、器件结构以及适用标准验证。"
+  ],
+  "factCheckStatus": "【事实】",
+  "generatedAt": "2026-10-13T00:00:00.000Z",
+  "reviewedAt": "2026-10-13T00:00:00.000Z",
+  "publishedAt": "2026-10-13T00:00:00.000Z",
+  "contentHash": "f4873883243f5547f4186a6e6ac3a804376a67831f3e32f923c4765fa09744d8",
+  "createdAt": "2026-10-13T00:00:00.000Z",
+  "updatedAt": "2026-10-13T00:00:00.000Z"
+}

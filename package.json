@@ -1,0 +1,43 @@
+{
+  "name": "fable-fragments",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "vitest run",
+    "test:content": "node --test scripts/content-tools.test.mjs",
+    "test:all": "npm test && npm run test:content",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "audit": "npm audit --omit=dev",
+    "content:validate": "node scripts/content-tools.mjs validate",
+    "content:index": "node scripts/content-tools.mjs index",
+    "content:search": "node scripts/content-tools.mjs search",
+    "content:check": "node scripts/content-tools.mjs check"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.117.3",
+    "dexie": "4.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.1.2",
+    "fake-indexeddb": "6.2.5",
+    "typescript": "7.0.2",
+    "vite": "8.3.4",
+    "vite-plugin-pwa": "2.0.0",
+    "vitest": "5.0.4"
+  }
+}
+

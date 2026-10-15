@@ -1,0 +1,5 @@
+content-library/
+supabase/migrations/
+schemas/
+scripts/content-tools.mjs
+用户从软件设置页导出的“微光学习备份-YYYY-MM-DD.json”
