@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isAllowedOwnerEmail, normalizePublicAppUrl } from './supabase'
+import { isAllowedOwnerEmail, loginEmailErrorMessage, normalizePublicAppUrl } from './supabase'
 
 describe('公开网址规范化', () => {
   it.each([
@@ -16,5 +16,17 @@ describe('公开网址规范化', () => {
     expect(isAllowedOwnerEmail(' Owner@Example.com ', 'owner@example.com')).toBe(true)
     expect(isAllowedOwnerEmail('other@example.com', 'owner@example.com')).toBe(false)
     expect(isAllowedOwnerEmail('owner@example.com', '')).toBe(false)
+  })
+})
+
+describe('登录邮件错误提示', () => {
+  it('明确提示邮件发送频率限制', () => {
+    expect(loginEmailErrorMessage({ code: 'over_email_send_rate_limit', status: 429 })).toContain('1分钟')
+    expect(loginEmailErrorMessage({ status: 429 })).toContain('过于频繁')
+  })
+
+  it('区分邮件提供商关闭和未知错误', () => {
+    expect(loginEmailErrorMessage({ code: 'email_provider_disabled', status: 422 })).toContain('认证设置')
+    expect(loginEmailErrorMessage({ code: 'unexpected', status: 500 })).toContain('检查邮箱')
   })
 })

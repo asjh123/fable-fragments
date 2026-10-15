@@ -62,12 +62,21 @@ export function normalizePublicAppUrl(configured: string | undefined, locationHr
 export function isAllowedOwnerEmail(email: string, configuredOwner = ownerEmail) {
   return Boolean(configuredOwner) && email.trim().toLocaleLowerCase('en-US') === configuredOwner.trim().toLocaleLowerCase('en-US')
 }
+export function loginEmailErrorMessage(error: { code?: string; status?: number } | null) {
+  if (error?.code === 'over_email_send_rate_limit' || error?.status === 429) {
+    return '请求过于频繁，请等待约1分钟后再试'
+  }
+  if (error?.code === 'email_provider_disabled') {
+    return '邮件登录暂不可用，请检查云端认证设置'
+  }
+  return '登录邮件发送失败，请检查邮箱后重试'
+}
 export async function sendMagicLink(email: string) {
   if (!supabase) throw new Error('当前没有配置云同步')
   const normalized = email.trim().toLocaleLowerCase('en-US')
   if (!isAllowedOwnerEmail(normalized)) throw new Error('登录请求无法完成，请检查配置后重试')
   const redirect = normalizePublicAppUrl(import.meta.env.VITE_PUBLIC_APP_URL, window.location.href, import.meta.env.BASE_URL)
   const { error } = await supabase.auth.signInWithOtp({ email: normalized, options: { emailRedirectTo: redirect, shouldCreateUser: false } })
-  if (error) throw new Error('登录邮件发送失败，请检查邮箱后重试')
+  if (error) throw new Error(loginEmailErrorMessage(error))
 }
 export async function signOut() { if (supabase) await supabase.auth.signOut() }
