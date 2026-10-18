@@ -71,12 +71,28 @@ export function loginEmailErrorMessage(error: { code?: string; status?: number }
   }
   return '登录邮件发送失败，请检查邮箱后重试'
 }
-export async function sendMagicLink(email: string) {
+export function normalizeEmailOtp(token: string) {
+  const normalized = token.replace(/\s+/g, '')
+  if (!/^\d{6,10}$/.test(normalized)) throw new Error('请输入邮件中的数字验证码')
+  return normalized
+}
+export async function sendEmailOtp(email: string) {
   if (!supabase) throw new Error('当前没有配置云同步')
   const normalized = email.trim().toLocaleLowerCase('en-US')
   if (!isAllowedOwnerEmail(normalized)) throw new Error('登录请求无法完成，请检查配置后重试')
   const redirect = normalizePublicAppUrl(import.meta.env.VITE_PUBLIC_APP_URL, window.location.href, import.meta.env.BASE_URL)
   const { error } = await supabase.auth.signInWithOtp({ email: normalized, options: { emailRedirectTo: redirect, shouldCreateUser: false } })
   if (error) throw new Error(loginEmailErrorMessage(error))
+}
+export async function verifyEmailOtp(email: string, token: string) {
+  if (!supabase) throw new Error('当前没有配置云同步')
+  const normalizedEmail = email.trim().toLocaleLowerCase('en-US')
+  if (!isAllowedOwnerEmail(normalizedEmail)) throw new Error('登录请求无法完成，请检查配置后重试')
+  const normalizedToken = normalizeEmailOtp(token)
+  const { error } = await supabase.auth.verifyOtp({ email: normalizedEmail, token: normalizedToken, type: 'email' })
+  if (error) {
+    if (error.code === 'otp_expired' || error.code === 'invalid_otp') throw new Error('验证码无效或已过期，请重新发送')
+    throw new Error('验证码验证失败，请稍后重试')
+  }
 }
 export async function signOut() { if (supabase) await supabase.auth.signOut() }

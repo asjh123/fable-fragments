@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isAllowedOwnerEmail, loginEmailErrorMessage, normalizePublicAppUrl } from './supabase'
+import { isAllowedOwnerEmail, loginEmailErrorMessage, normalizeEmailOtp, normalizePublicAppUrl } from './supabase'
 
 describe('公开网址规范化', () => {
   it.each([
@@ -28,5 +28,16 @@ describe('登录邮件错误提示', () => {
   it('区分邮件提供商关闭和未知错误', () => {
     expect(loginEmailErrorMessage({ code: 'email_provider_disabled', status: 422 })).toContain('认证设置')
     expect(loginEmailErrorMessage({ code: 'unexpected', status: 500 })).toContain('检查邮箱')
+  })
+})
+
+describe('邮件验证码', () => {
+  it('接受6至10位数字并移除空白', () => {
+    expect(normalizeEmailOtp(' 123 456 ')).toBe('123456')
+    expect(normalizeEmailOtp('12345678')).toBe('12345678')
+  })
+
+  it.each(['12345', '12345678901', '12ab56', ''])('拒绝无效验证码：%s', (token) => {
+    expect(() => normalizeEmailOtp(token)).toThrow('数字验证码')
   })
 })

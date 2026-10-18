@@ -5,7 +5,7 @@ import { contentKey, type ContentPack } from './domain/content'
 import { completedFragments, createLearningEvent, didStudyOn, latestNote, shanghaiDate, type EventType, type LearningEvent } from './domain/events'
 import { db } from './data/db'
 import { clearLocalData, exportBackup, getDeviceId, getLocalUserId, importBackupText, importContentText, saveContent, saveEvent } from './data/repository'
-import { cloudConfigured, ownerEmail, remoteAdapter, sendMagicLink, signOut, supabase } from './sync/supabase'
+import { cloudConfigured, ownerEmail, remoteAdapter, sendEmailOtp, signOut, supabase, verifyEmailOtp } from './sync/supabase'
 import { syncNow } from './sync/syncEngine'
 
 type View = 'home' | 'reader' | 'settings'
@@ -31,6 +31,8 @@ export function App() {
   const [notice, setNotice] = useState('')
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [loginEmail, setLoginEmail] = useState(ownerEmail)
+  const [otpCode, setOtpCode] = useState('')
+  const [otpSent, setOtpSent] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
   const [lastSyncError, setLastSyncError] = useState<string | null>(null)
@@ -235,8 +237,20 @@ export function App() {
 
   const login = async () => {
     if (!loginEmail.includes('@')) { setNotice('请输入有效邮箱。'); return }
-    try { await sendMagicLink(loginEmail); setNotice('登录验证已发送。新设备请在同一浏览器或PWA中完成验证。') }
+    try {
+      await sendEmailOtp(loginEmail)
+      setOtpSent(true)
+      setNotice('登录验证码已发送，请留在当前应用并输入邮件中的数字验证码。')
+    }
     catch (error) { setNotice(errorMessage(error)) }
+  }
+
+  const verifyLogin = async () => {
+    try {
+      await verifyEmailOtp(loginEmail, otpCode)
+      setOtpCode('')
+      setNotice('登录成功，正在同步云端数据。')
+    } catch (error) { setNotice(errorMessage(error)) }
   }
 
   if (!current) return <main className="loading">正在整理今天的学习内容…</main>
@@ -327,11 +341,14 @@ export function App() {
           <section className="settings-card">
             <h2>跨设备同步</h2>
             {!cloudConfigured && <div className="soft-notice"><strong>当前是本地模式</strong><span>手机和电脑的数据暂不互通。配置云端后，同一账户会自动合并学习事件。</span></div>}
-            {cloudConfigured && !userEmail && <div className="login-row"><input type="email" value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} placeholder="唯一账号邮箱" aria-label="邮箱"/><button onClick={() => void login()}>发送登录验证</button></div>}
+            {cloudConfigured && !userEmail && <div className="login-stack">
+              <div className="login-row"><input type="email" value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} placeholder="唯一账号邮箱" aria-label="邮箱"/><button onClick={() => void login()}>{otpSent ? '重新发送验证码' : '发送登录验证码'}</button></div>
+              {otpSent && <div className="login-row"><input type="text" inputMode="numeric" autoComplete="one-time-code" value={otpCode} onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, '').slice(0, 10))} placeholder="邮件中的数字验证码" aria-label="邮件验证码"/><button onClick={() => void verifyLogin()}>验证并登录</button></div>}
+            </div>}
             {userEmail && <div className="account-row"><span>已登录：{userEmail}</span><button onClick={() => void runSync()}>立即同步</button><button onClick={() => void signOut()}>退出</button></div>}
             <p className="microcopy">状态：{syncLabel} · 待上传 {pendingCount} 条 · 最后成功同步：{lastSyncedAt ? formatTime(lastSyncedAt) : '尚未完成'}。</p>
             {lastSyncError && <p className="microcopy warning-copy">最近错误：{lastSyncError}</p>}
-            <p className="microcopy">未登录或云端不可用时，所有操作仍会保存在本机；PWA完全关闭后不保证后台同步。</p>
+            <p className="microcopy">请在当前应用中输入邮件验证码；不要通过邮件链接切换到另一个浏览器窗口。未登录或云端不可用时，所有操作仍会保存在本机；PWA完全关闭后不保证后台同步。</p>
           </section>
           <section className="settings-card">
             <h2>阅读与外观</h2>

@@ -118,6 +118,7 @@ textarea { width: 100%; min-height: 110px; resize: vertical; padding: 14px; bord
 .soft-notice { padding: 16px; display: flex; flex-direction: column; gap: 5px; border-radius: 12px; background: rgba(215,168,61,.1); color: var(--muted); font-size: 13px; }
 .soft-notice strong { color: var(--ink); }
 .login-row, .account-row, .button-row { display: flex; gap: 9px; flex-wrap: wrap; }
+.login-stack { display: grid; gap: 10px; }
 .login-row input { flex: 1; min-width: 220px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--paper-2); }
 .setting-line { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 15px 0; border-top: 1px solid var(--line); }
 .muted { color: var(--muted); font-size: 12px; text-align: right; }
