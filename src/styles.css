@@ -120,6 +120,7 @@ textarea { width: 100%; min-height: 110px; resize: vertical; padding: 14px; bord
 .login-row, .account-row, .button-row { display: flex; gap: 9px; flex-wrap: wrap; }
 .login-stack { display: grid; gap: 10px; }
 .login-row input { flex: 1; min-width: 220px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--paper-2); }
+.text-button { justify-self: start; padding: 3px 0; border: 0; color: var(--accent); background: transparent; text-decoration: underline; }
 .setting-line { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 15px 0; border-top: 1px solid var(--line); }
 .muted { color: var(--muted); font-size: 12px; text-align: right; }
 .privacy-card p { color: var(--muted); line-height: 1.75; }

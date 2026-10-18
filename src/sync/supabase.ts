@@ -71,12 +71,13 @@ export function loginEmailErrorMessage(error: { code?: string; status?: number }
   }
   return '登录邮件发送失败，请检查邮箱后重试'
 }
-export function normalizeEmailOtp(token: string) {
-  const normalized = token.replace(/\s+/g, '')
-  if (!/^\d{6,10}$/.test(normalized)) throw new Error('请输入邮件中的数字验证码')
-  return normalized
+export function validateNewPassword(password: string, confirmation: string) {
+  if (password !== confirmation) throw new Error('两次输入的密码不一致')
+  if (password.length < 12 || password.length > 128) throw new Error('同步密码需为12至128个字符')
+  if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) throw new Error('同步密码至少包含一个字母和一个数字')
+  return password
 }
-export async function sendEmailOtp(email: string) {
+export async function sendMagicLink(email: string) {
   if (!supabase) throw new Error('当前没有配置云同步')
   const normalized = email.trim().toLocaleLowerCase('en-US')
   if (!isAllowedOwnerEmail(normalized)) throw new Error('登录请求无法完成，请检查配置后重试')
@@ -84,15 +85,20 @@ export async function sendEmailOtp(email: string) {
   const { error } = await supabase.auth.signInWithOtp({ email: normalized, options: { emailRedirectTo: redirect, shouldCreateUser: false } })
   if (error) throw new Error(loginEmailErrorMessage(error))
 }
-export async function verifyEmailOtp(email: string, token: string) {
+export async function signInWithSyncPassword(email: string, password: string) {
   if (!supabase) throw new Error('当前没有配置云同步')
   const normalizedEmail = email.trim().toLocaleLowerCase('en-US')
   if (!isAllowedOwnerEmail(normalizedEmail)) throw new Error('登录请求无法完成，请检查配置后重试')
-  const normalizedToken = normalizeEmailOtp(token)
-  const { error } = await supabase.auth.verifyOtp({ email: normalizedEmail, token: normalizedToken, type: 'email' })
-  if (error) {
-    if (error.code === 'otp_expired' || error.code === 'invalid_otp') throw new Error('验证码无效或已过期，请重新发送')
-    throw new Error('验证码验证失败，请稍后重试')
-  }
+  if (!password) throw new Error('请输入同步密码')
+  const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
+  if (error) throw new Error('邮箱或同步密码不正确')
+}
+export async function updateSyncPassword(password: string, confirmation: string) {
+  if (!supabase) throw new Error('当前没有配置云同步')
+  const validPassword = validateNewPassword(password, confirmation)
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw new Error('请先通过邮件链接登录，再设置同步密码')
+  const { error } = await supabase.auth.updateUser({ password: validPassword })
+  if (error) throw new Error('同步密码设置失败，请重新登录后再试')
 }
 export async function signOut() { if (supabase) await supabase.auth.signOut() }

@@ -5,7 +5,7 @@ import { contentKey, type ContentPack } from './domain/content'
 import { completedFragments, createLearningEvent, didStudyOn, latestNote, shanghaiDate, type EventType, type LearningEvent } from './domain/events'
 import { db } from './data/db'
 import { clearLocalData, exportBackup, getDeviceId, getLocalUserId, importBackupText, importContentText, saveContent, saveEvent } from './data/repository'
-import { cloudConfigured, ownerEmail, remoteAdapter, sendEmailOtp, signOut, supabase, verifyEmailOtp } from './sync/supabase'
+import { cloudConfigured, ownerEmail, remoteAdapter, sendMagicLink, signInWithSyncPassword, signOut, supabase, updateSyncPassword } from './sync/supabase'
 import { syncNow } from './sync/syncEngine'
 
 type View = 'home' | 'reader' | 'settings'
@@ -31,8 +31,9 @@ export function App() {
   const [notice, setNotice] = useState('')
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [loginEmail, setLoginEmail] = useState(ownerEmail)
-  const [otpCode, setOtpCode] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
+  const [loginPassword, setLoginPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [pendingCount, setPendingCount] = useState(0)
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
   const [lastSyncError, setLastSyncError] = useState<string | null>(null)
@@ -238,18 +239,26 @@ export function App() {
   const login = async () => {
     if (!loginEmail.includes('@')) { setNotice('请输入有效邮箱。'); return }
     try {
-      await sendEmailOtp(loginEmail)
-      setOtpSent(true)
-      setNotice('登录验证码已发送，请留在当前应用并输入邮件中的数字验证码。')
+      await signInWithSyncPassword(loginEmail, loginPassword)
+      setLoginPassword('')
+      setNotice('登录成功，正在同步云端数据。')
     }
     catch (error) { setNotice(errorMessage(error)) }
   }
 
-  const verifyLogin = async () => {
+  const sendSetupLink = async () => {
     try {
-      await verifyEmailOtp(loginEmail, otpCode)
-      setOtpCode('')
-      setNotice('登录成功，正在同步云端数据。')
+      await sendMagicLink(loginEmail)
+      setNotice('一次性设置链接已发送。请在浏览器打开邮件链接，然后回到设置页创建同步密码。')
+    } catch (error) { setNotice(errorMessage(error)) }
+  }
+
+  const saveSyncPassword = async () => {
+    try {
+      await updateSyncPassword(newPassword, confirmPassword)
+      setNewPassword('')
+      setConfirmPassword('')
+      setNotice('同步密码设置成功。现在可在手机和电脑上直接登录。')
     } catch (error) { setNotice(errorMessage(error)) }
   }
 
@@ -342,13 +351,16 @@ export function App() {
             <h2>跨设备同步</h2>
             {!cloudConfigured && <div className="soft-notice"><strong>当前是本地模式</strong><span>手机和电脑的数据暂不互通。配置云端后，同一账户会自动合并学习事件。</span></div>}
             {cloudConfigured && !userEmail && <div className="login-stack">
-              <div className="login-row"><input type="email" value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} placeholder="唯一账号邮箱" aria-label="邮箱"/><button onClick={() => void login()}>{otpSent ? '重新发送验证码' : '发送登录验证码'}</button></div>
-              {otpSent && <div className="login-row"><input type="text" inputMode="numeric" autoComplete="one-time-code" value={otpCode} onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, '').slice(0, 10))} placeholder="邮件中的数字验证码" aria-label="邮件验证码"/><button onClick={() => void verifyLogin()}>验证并登录</button></div>}
+              <div className="login-row"><input type="email" value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} placeholder="唯一账号邮箱" aria-label="邮箱"/><input type="password" autoComplete="current-password" value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} placeholder="同步密码" aria-label="同步密码"/><button onClick={() => void login()}>登录并同步</button></div>
+              <button className="text-button" onClick={() => void sendSetupLink()}>首次使用或忘记密码：发送一次性设置链接</button>
             </div>}
-            {userEmail && <div className="account-row"><span>已登录：{userEmail}</span><button onClick={() => void runSync()}>立即同步</button><button onClick={() => void signOut()}>退出</button></div>}
+            {userEmail && <div className="login-stack">
+              <div className="account-row"><span>已登录：{userEmail}</span><button onClick={() => void runSync()}>立即同步</button><button onClick={() => void signOut()}>退出</button></div>
+              <div className="login-row"><input type="password" autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="设置新的同步密码（至少12位）" aria-label="新的同步密码"/><input type="password" autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="再次输入同步密码" aria-label="确认同步密码"/><button onClick={() => void saveSyncPassword()}>保存同步密码</button></div>
+            </div>}
             <p className="microcopy">状态：{syncLabel} · 待上传 {pendingCount} 条 · 最后成功同步：{lastSyncedAt ? formatTime(lastSyncedAt) : '尚未完成'}。</p>
             {lastSyncError && <p className="microcopy warning-copy">最近错误：{lastSyncError}</p>}
-            <p className="microcopy">请在当前应用中输入邮件验证码；不要通过邮件链接切换到另一个浏览器窗口。未登录或云端不可用时，所有操作仍会保存在本机；PWA完全关闭后不保证后台同步。</p>
+            <p className="microcopy">首次使用时通过邮件链接进入网页并设置同步密码；以后手机和电脑都可直接登录。未登录或云端不可用时，所有操作仍会保存在本机；PWA完全关闭后不保证后台同步。</p>
           </section>
           <section className="settings-card">
             <h2>阅读与外观</h2>

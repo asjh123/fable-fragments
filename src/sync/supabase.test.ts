@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isAllowedOwnerEmail, loginEmailErrorMessage, normalizeEmailOtp, normalizePublicAppUrl } from './supabase'
+import { isAllowedOwnerEmail, loginEmailErrorMessage, normalizePublicAppUrl, validateNewPassword } from './supabase'
 
 describe('公开网址规范化', () => {
   it.each([
@@ -31,13 +31,14 @@ describe('登录邮件错误提示', () => {
   })
 })
 
-describe('邮件验证码', () => {
-  it('接受6至10位数字并移除空白', () => {
-    expect(normalizeEmailOtp(' 123 456 ')).toBe('123456')
-    expect(normalizeEmailOtp('12345678')).toBe('12345678')
+describe('同步密码', () => {
+  it('接受一致且包含字母和数字的长密码', () => {
+    expect(validateNewPassword('long-sync-pass-2026', 'long-sync-pass-2026')).toBe('long-sync-pass-2026')
   })
 
-  it.each(['12345', '12345678901', '12ab56', ''])('拒绝无效验证码：%s', (token) => {
-    expect(() => normalizeEmailOtp(token)).toThrow('数字验证码')
+  it('拒绝不一致、过短或组成单一的密码', () => {
+    expect(() => validateNewPassword('long-sync-pass-2026', 'different-pass-2026')).toThrow('不一致')
+    expect(() => validateNewPassword('short1', 'short1')).toThrow('12至128')
+    expect(() => validateNewPassword('onlyletterslong', 'onlyletterslong')).toThrow('字母和一个数字')
   })
 })

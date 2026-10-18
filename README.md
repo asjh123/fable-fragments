@@ -4,7 +4,7 @@
 
 ## 第一阶段增量版
 
-- 单一预创建邮箱登录；启动、登录、记录学习、网络恢复、回到前台、手动点击及页面可见时每 15 分钟触发同步。
+- 单一预创建邮箱与同步密码登录；启动、登录、记录学习、网络恢复、回到前台、手动点击及页面可见时每 15 分钟触发同步。
 - Dexie/IndexedDB 离线写入；Supabase 通过追加式事件、500 条分页和 `(created_at,event_id)` 复合游标中转。
 - 界面区分上传/下载结果，显示待上传数、最后成功时间和最近错误。
 - 新设备可从云端恢复已发布内容和已上传事件；未上传的数据不能恢复。
@@ -45,10 +45,10 @@ SQLite 使用 Node 内置 `node:sqlite` 和 FTS5；连续中文词使用参数�
 ## 配置跨设备同步
 
 1. 创建自己的 Supabase 项目并执行 `supabase/migrations/202610130001_initial.sql`。
-2. 在 Supabase Auth 中先创建唯一邮箱账号，关闭公开注册；新设备只允许登录已有账号。
+2. 在 Supabase Auth 中先创建唯一邮箱账号，关闭公开注册；新设备只允许登录已有账号。首次通过邮件链接进入已认证网页并设置同步密码。
 3. 复制 `.env.example` 为 `.env`，填写公开 URL、publishable/anon key、唯一邮箱和完整部署 URL。
 4. `VITE_PUBLIC_APP_URL` 必须包含部署子路径，例如 `https://用户名.github.io/仓库名/`。
-5. Auth Redirect URLs 中加入同一完整 URL。推荐配置邮箱验证码 OTP；当前界面调用 `signInWithOtp`，Supabase 模板设置决定收到验证码还是 Magic Link。
+5. Auth Redirect URLs 中加入同一完整 URL。默认 Magic Link 只用于首次设置或找回同步密码；日常登录调用 `signInWithPassword`，避免邮件内置浏览器与已安装 PWA 的会话隔离。
 6. 只在浏览器放公开 key，绝不使用 `service_role`/secret key。
 
 电脑不是服务器，手机和电脑无需同一局域网。两端都通过 HTTPS 站点与 Supabase 通信；电脑关闭不会阻止手机读取已上传的数据。
