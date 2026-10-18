@@ -100,7 +100,10 @@ export function parseCursor(value: unknown): SyncCursor | null {
   return { createdAt: candidate.createdAt, eventId: candidate.eventId }
 }
 function sameCursor(left: SyncCursor | null, right: SyncCursor) { return left?.createdAt === right.createdAt && left.eventId === right.eventId }
-function messageOf(error: unknown, fallback: string) { return error instanceof Error && error.message ? error.message : fallback }
+function messageOf(error: unknown, fallback: string) {
+  if (error instanceof Error && error.name === 'ZodError') return '云端记录格式暂不兼容，本机数据已保留，请更新应用后重试'
+  return error instanceof Error && error.message ? error.message : fallback
+}
 
 interface MemoryRemoteEvent { event: LearningEvent; serverCreatedAt: string }
 export class MemorySyncAdapter implements RemoteSyncAdapter {

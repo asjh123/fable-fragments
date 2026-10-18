@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isAllowedOwnerEmail, loginEmailErrorMessage, normalizePublicAppUrl, validateNewPassword } from './supabase'
+import { isAllowedOwnerEmail, loginEmailErrorMessage, normalizePublicAppUrl, normalizeRemoteTimestamp, validateNewPassword } from './supabase'
 
 describe('公开网址规范化', () => {
   it.each([
@@ -40,5 +40,16 @@ describe('同步密码', () => {
     expect(() => validateNewPassword('long-sync-pass-2026', 'different-pass-2026')).toThrow('不一致')
     expect(() => validateNewPassword('short1', 'short1')).toThrow('12至128')
     expect(() => validateNewPassword('onlyletterslong', 'onlyletterslong')).toThrow('字母和一个数字')
+  })
+})
+
+describe('云端时间兼容', () => {
+  it('把Postgres时区偏移时间标准化为Z结尾的ISO时间', () => {
+    expect(normalizeRemoteTimestamp('2026-10-19T12:09:00+08:00')).toBe('2026-10-19T04:09:00.000Z')
+    expect(normalizeRemoteTimestamp('2026-10-19T04:09:00.123456+00:00')).toBe('2026-10-19T04:09:00.123Z')
+  })
+
+  it('拒绝无法解析的云端时间', () => {
+    expect(() => normalizeRemoteTimestamp('not-a-date')).toThrow('无效时间')
   })
 })

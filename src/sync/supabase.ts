@@ -17,8 +17,13 @@ type RemoteRow = {
 function toRow(event: LearningEvent): Omit<RemoteRow, 'created_at'> {
   return { event_id: event.eventId, user_id: event.userId, device_id: event.deviceId, event_type: event.eventType, content_id: event.contentId, content_version: event.contentVersion, fragment_id: event.fragmentId, occurred_at: event.occurredAt, study_date: event.studyDate, timezone: event.timezone, payload: event.payload, schema_version: event.schemaVersion, client_created_at: event.createdAt }
 }
+export function normalizeRemoteTimestamp(value: string): string {
+  const timestamp = Date.parse(value)
+  if (Number.isNaN(timestamp)) throw new Error('云端记录包含无效时间')
+  return new Date(timestamp).toISOString()
+}
 function fromRow(row: RemoteRow): LearningEvent {
-  return { eventId: row.event_id, userId: row.user_id, deviceId: row.device_id, eventType: row.event_type, contentId: row.content_id, contentVersion: row.content_version, fragmentId: row.fragment_id, occurredAt: row.occurred_at, studyDate: row.study_date, timezone: row.timezone, payload: row.payload ?? {}, schemaVersion: row.schema_version, createdAt: row.client_created_at, syncStatus: 'synced' }
+  return { eventId: row.event_id, userId: row.user_id, deviceId: row.device_id, eventType: row.event_type, contentId: row.content_id, contentVersion: row.content_version, fragmentId: row.fragment_id, occurredAt: normalizeRemoteTimestamp(row.occurred_at), studyDate: row.study_date, timezone: row.timezone, payload: row.payload ?? {}, schemaVersion: row.schema_version, createdAt: normalizeRemoteTimestamp(row.client_created_at), syncStatus: 'synced' }
 }
 
 export class SupabaseSyncAdapter implements RemoteSyncAdapter {
@@ -42,7 +47,7 @@ export class SupabaseSyncAdapter implements RemoteSyncAdapter {
     if (error) throw new Error('云端学习记录暂时无法读取')
     const rows = (data ?? []) as RemoteRow[]
     const last = rows.at(-1)
-    return { events: rows.map(fromRow), cursor: last ? { createdAt: last.created_at, eventId: last.event_id } : cursor, hasMore: rows.length === limit }
+    return { events: rows.map(fromRow), cursor: last ? { createdAt: normalizeRemoteTimestamp(last.created_at), eventId: last.event_id } : cursor, hasMore: rows.length === limit }
   }
   async pullPublishedContents(): Promise<ContentPack[]> {
     const { data, error } = await this.client.from('content_packs').select('body').eq('status', 'published').order('content_id').order('version')
