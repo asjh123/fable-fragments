@@ -3,6 +3,21 @@ import { useRegisterSW } from 'virtual:pwa-register/react'
 import { sampleContents } from './content'
 import { contentKey, type ContentPack } from './domain/content'
 import { completedFragments, createLearningEvent, didStudyOn, latestNote, shanghaiDate, type EventType, type LearningEvent } from './domain/events'
+import {
+  buildFeedbackReport,
+  createFeedbackPayload,
+  createSkippedPayload,
+  deriveInventory,
+  derivePreferenceSignals,
+  factReviewKeys,
+  feedbackReasonLabels,
+  latestFeedbackByContent,
+  latestPublishedContents,
+  recommendNextContent,
+  type ContentFeedbackPayload,
+  type FeedbackRating,
+  type FeedbackReason
+} from './domain/feedback'
 import { db } from './data/db'
 import { clearLocalData, exportBackup, getDeviceId, getLocalUserId, importBackupText, importContentText, saveContent, saveEvent } from './data/repository'
 import { cloudConfigured, ownerEmail, remoteAdapter, sendMagicLink, signInWithSyncPassword, signOut, supabase, updateSyncPassword } from './sync/supabase'
@@ -15,7 +30,10 @@ const formatTime = (iso?: string) => iso
   ? new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
   : '还没有学习记录'
 
-const errorMessage = (error: unknown) => error instanceof Error ? error.message : '操作没有完成，请稍后重试'
+const errorMessage = (error: unknown) => {
+  if (error instanceof Error && error.name === 'ZodError') return '数据格式暂不兼容，本机数据没有被删除。'
+  return error instanceof Error && error.message.length <= 180 ? error.message : '操作没有完成，请稍后重试'
+}
 
 export function App() {
   const [view, setView] = useState<View>(() => {
@@ -50,12 +68,17 @@ export function App() {
   const revealed = useMemo(() => current ? events.some((event) => event.contentId === current.contentId && event.contentVersion === current.version && event.eventType === 'CONCEPT_VIEWED') || fragmentIndex >= 3 : false, [events, current, fragmentIndex])
   const studiedToday = didStudyOn(events)
   const lastEvent = [...events].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0]
+  const feedback = useMemo(() => latestFeedbackByContent(events), [events])
+  const inventory = useMemo(() => deriveInventory(contents, events), [contents, events])
+  const preferenceSignals = useMemo(() => derivePreferenceSignals(contents, events), [contents, events])
+  const reviewKeys = useMemo(() => factReviewKeys(events), [events])
+  const currentFeedback = current ? feedback.get(contentKey(current.contentId, current.version))?.payload : undefined
 
   const refresh = useCallback(async () => {
     const [storedContents, storedEvents, selected] = await Promise.all([
       db.contents.toArray(), db.events.toArray(), db.settings.get('currentContent')
     ])
-    const packs = storedContents.map(({ key: _key, ...pack }) => pack)
+    const packs = latestPublishedContents(storedContents.map(({ key: _key, ...pack }) => pack))
     setContents(packs)
     setEvents(storedEvents)
     setPendingCount(storedEvents.filter((event) => event.syncStatus !== 'synced').length)
@@ -204,6 +227,25 @@ export function App() {
     setNotice('这句话已安全保存在本机。')
   }
 
+  const submitFeedback = async (rating: FeedbackRating, reasons: FeedbackReason[] = [], optionalComment = '') => {
+    await record('CONTENT_FEEDBACK_SUBMITTED', null, createFeedbackPayload(rating, reasons, optionalComment))
+    setNotice('反馈已保存。')
+  }
+
+  const skipCurrent = async () => {
+    if (!current) return
+    await record('CONTENT_SKIPPED', null, createSkippedPayload())
+    const storedEvents = await db.events.toArray()
+    const next = recommendNextContent(contents, storedEvents, contentKey(current.contentId, current.version))
+    if (!next) {
+      setNotice('暂时没有其他未读内容，这篇以后仍可继续。')
+      setView('home')
+      return
+    }
+    await chooseContent(next)
+    setNotice('已换一篇，原来的阅读记录仍然保留。')
+  }
+
   const importFile = async (event: ChangeEvent<HTMLInputElement>, kind: 'content' | 'backup') => {
     const file = event.target.files?.[0]
     event.target.value = ''
@@ -225,6 +267,17 @@ export function App() {
     link.download = `微光学习备份-${shanghaiDate()}.json`
     link.click()
     URL.revokeObjectURL(link.href)
+  }
+
+  const downloadFeedbackReport = () => {
+    const report = buildFeedbackReport(contents, events)
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json;charset=utf-8' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `微光反馈报告-${shanghaiDate()}.json`
+    link.click()
+    URL.revokeObjectURL(link.href)
+    setNotice('反馈报告已导出，不包含账号、令牌、设备标识或普通笔记。')
   }
 
   const clearDevice = async () => {
@@ -300,6 +353,14 @@ export function App() {
             <div className="completion-line"><span className={studiedToday ? 'check done' : 'check'}>{studiedToday ? '✓' : '○'}</span><span>{studiedToday ? '今日目标已完成' : '完成任意一个片段即可点亮今天'}</span><small>{formatTime(lastEvent?.occurredAt)}</small></div>
           </section>
 
+          <section className="inventory-card" aria-label="内容库存">
+            <div><strong>{inventory.unread}</strong><span>未读库存</span></div>
+            <div><strong>{inventory.completed}</strong><span>已经完成</span></div>
+            <div><strong>{inventory.available}</strong><span>当前可选</span></div>
+            <button className="secondary-button" onClick={() => void skipCurrent()}>换一篇</button>
+          </section>
+          {inventory.isLow && <div className="stock-notice" role="status">内容库存不足，可以准备下一批内容。这里只提醒，不会自动生成。</div>}
+
           <section className="library">
             <div className="section-heading"><div><span className="kicker">故事架</span><h2>选择下一束微光</h2></div><span>{contents.length} 个概念</span></div>
             <div className="story-grid">
@@ -320,7 +381,7 @@ export function App() {
 
       {view === 'reader' && (
         <main className="page reader-page">
-          <button className="back-link" onClick={() => setView('home')}>← 暂停并返回</button>
+          <div className="reader-top-actions"><button className="back-link" onClick={() => setView('home')}>← 暂停并返回</button><button className="back-link" onClick={() => void skipCurrent()}>换一篇</button></div>
           <div className="reader-progress" aria-label={`第${fragmentIndex + 1}段，共${current.fragments.length}段`}>
             {current.fragments.map((item, index) => <span key={item.fragmentId} className={index <= fragmentIndex ? 'filled' : ''} />)}
           </div>
@@ -333,6 +394,8 @@ export function App() {
             {fragment.kind === 'explanation' && <ConceptDetails pack={current} />}
             {fragment.kind === 'mapping' && <MappingDetails pack={current} note={note} setNote={setNote} saveNote={saveNote} />}
             {fragment.kind === 'quiz' && <Quiz pack={current} choice={quizChoice} setChoice={setQuizChoice} submitted={quizSubmitted} submit={submitQuiz} />}
+            {fragment.kind === 'quiz' && <FeedbackPanel contentKey={currentKey} existing={currentFeedback} onSubmit={submitFeedback} />}
+            {reviewKeys.has(currentKey) && <p className="review-flag">待复核：这表示你曾标记“怀疑事实有误”，不代表内容已经被判定错误。</p>}
 
             <div className="reader-actions">
               <button className="secondary-button" disabled={fragmentIndex === 0} onClick={() => void move(fragmentIndex - 1)}>上一段</button>
@@ -368,15 +431,26 @@ export function App() {
             <div className="setting-line"><span>安装到桌面</span><span className="muted">使用浏览器菜单中的“安装应用”或“添加到主屏幕”</span></div>
           </section>
           <section className="settings-card">
+            <h2>我的内容偏好</h2>
+            {preferenceSignals.length === 0
+              ? <p className="microcopy">继续阅读后将逐步形成偏好；至少需要3次同类有效反馈。</p>
+              : <ul className="preference-list">{preferenceSignals.map((signal) => <li key={`${signal.kind}:${signal.key}`}><strong>{signal.label}</strong><span>{signal.count}次相关反馈</span></li>)}</ul>}
+            {reviewKeys.size > 0 && <div className="review-list"><strong>待复核内容</strong>{[...reviewKeys].map((key) => {
+              const pack = contents.find((item) => contentKey(item.contentId, item.version) === key)
+              return <span key={key}>{pack?.revealedTitle ?? key}</span>
+            })}<small>待复核不等于事实已经错误；后续修订必须创建新版本。</small></div>}
+          </section>
+          <section className="settings-card">
             <h2>内容与备份</h2>
             <div className="button-row">
               <button onClick={() => importRef.current?.click()}>导入内容包</button>
               <button onClick={() => backupRef.current?.click()}>导入学习备份</button>
               <button onClick={() => void downloadBackup()}>导出全部数据</button>
+              <button onClick={downloadFeedbackReport}>导出反馈报告</button>
             </div>
             <input hidden ref={importRef} type="file" accept="application/json,.json" onChange={(event) => void importFile(event, 'content')} />
             <input hidden ref={backupRef} type="file" accept="application/json,.json" onChange={(event) => void importFile(event, 'backup')} />
-            <p className="microcopy">导出文件不包含登录令牌和密钥，可用于换设备或恢复数据。</p>
+            <p className="microcopy">完整备份用于恢复；反馈报告只包含内容评价，不包含账号、同步密码、令牌、设备标识或普通笔记。</p>
           </section>
           <section className="settings-card privacy-card">
             <h2>隐私边界</h2>
@@ -424,6 +498,61 @@ function Quiz({ pack, choice, setChoice, submitted, submit }: { pack: ContentPac
     {submitted && <div className="quiz-result"><strong>{choice === pack.quiz.correctIndex ? '理解得很准确。' : '这次先记住区别。'}</strong><p>{pack.quiz.explanation}</p></div>}
     <div className="sources"><h3>资料来源</h3>{pack.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.title}<small>{source.publisher} · {source.sourceType}</small></a>)}</div>
   </div>
+}
+
+function FeedbackPanel({
+  contentKey: activeContentKey,
+  existing,
+  onSubmit
+}: {
+  contentKey: string
+  existing?: ContentFeedbackPayload
+  onSubmit: (rating: FeedbackRating, reasons?: FeedbackReason[], optionalComment?: string) => Promise<void>
+}) {
+  const [rating, setRating] = useState<FeedbackRating | null>(existing?.rating ?? null)
+  const [reasons, setReasons] = useState<FeedbackReason[]>(existing?.reasons ?? [])
+  const [comment, setComment] = useState(existing?.optionalComment ?? '')
+
+  useEffect(() => {
+    setRating(existing?.rating ?? null)
+    setReasons(existing?.reasons ?? [])
+    setComment(existing?.optionalComment ?? '')
+  }, [activeContentKey, existing?.submittedAt, existing?.rating, existing?.optionalComment])
+
+  const quickSubmit = async (nextRating: Exclude<FeedbackRating, 'needs_work'>) => {
+    setRating(nextRating)
+    setReasons([])
+    setComment('')
+    await onSubmit(nextRating, [], '')
+  }
+
+  const toggleReason = (reason: FeedbackReason) => {
+    setReasons((current) => current.includes(reason) ? current.filter((item) => item !== reason) : [...current, reason])
+  }
+
+  return <section className="feedback-panel" aria-labelledby="feedback-title">
+    <p className="kicker">读后感受</p>
+    <h2 id="feedback-title">这篇对你来说怎么样？</h2>
+    <p className="microcopy">随手点一下就够了。以后可以重新评价，统计只采用最新一次。</p>
+    <div className="feedback-ratings">
+      <button className={rating === 'helpful' ? 'selected' : ''} onClick={() => void quickSubmit('helpful')}>有收获</button>
+      <button className={rating === 'neutral' ? 'selected' : ''} onClick={() => void quickSubmit('neutral')}>一般</button>
+      <button className={rating === 'needs_work' ? 'selected' : ''} onClick={() => setRating('needs_work')}>差点意思</button>
+    </div>
+    {rating === 'needs_work' && <div className="feedback-details">
+      <p>哪里差点意思？可以多选。</p>
+      <div className="reason-chips">{Object.entries(feedbackReasonLabels).map(([reason, label]) => <button
+        type="button"
+        key={reason}
+        className={reasons.includes(reason as FeedbackReason) ? 'selected' : ''}
+        aria-pressed={reasons.includes(reason as FeedbackReason)}
+        onClick={() => toggleReason(reason as FeedbackReason)}
+      >{label}</button>)}</div>
+      {reasons.includes('other') && <textarea aria-label="其他反馈说明" maxLength={300} value={comment} onChange={(event) => setComment(event.target.value)} placeholder="可选，不填写也可以提交" />}
+      <button className="primary-button" disabled={reasons.length === 0} onClick={() => void onSubmit('needs_work', reasons, comment)}>保存反馈</button>
+    </div>}
+    {existing && <p className="feedback-saved" role="status">已保存当前评价，可随时修改。</p>}
+  </section>
 }
 
 function useOnlineStatus() {

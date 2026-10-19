@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { bayesianStory } from '../content/bayesian'
 import { completedFragments, createLearningEvent, latestNote } from '../domain/events'
+import { createFeedbackPayload } from '../domain/feedback'
 import { LearningDatabase } from '../data/db'
 import { saveEvent } from '../data/repository'
 import { MemorySyncAdapter, parseCursor, syncNow } from './syncEngine'
@@ -77,6 +78,19 @@ describe('事件同步', () => {
     expect(completedFragments(restored, bayesianStory.contentId, 1)).toContain(bayesianStory.fragments[0].fragmentId)
     expect(latestNote(restored, bayesianStory.contentId, 1)).toBe('证据会更新判断')
     expect(restored.filter((event) => event.syncStatus !== 'synced')).toHaveLength(0)
+  })
+
+  it('反馈事件可以上传并在另一设备严格校验后恢复', async () => {
+    const phone = makeDb(); const computer = makeDb(); const adapter = new MemorySyncAdapter('user-a')
+    const feedback = createLearningEvent({
+      userId: 'user-a', deviceId: 'phone', eventType: 'CONTENT_FEEDBACK_SUBMITTED',
+      contentId: bayesianStory.contentId, contentVersion: 1,
+      payload: createFeedbackPayload('needs_work', ['too_shallow'])
+    })
+    await saveEvent(feedback, phone)
+    expect((await syncNow(adapter, phone)).uploaded).toBe(1)
+    expect((await syncNow(adapter, computer)).downloaded).toBe(1)
+    expect((await computer.events.get(feedback.eventId))?.payload).toMatchObject({ rating: 'needs_work', reasons: ['too_shallow'] })
   })
 
   it('空结果正常结束，无效远端事件不写入也不推进游标', async () => {

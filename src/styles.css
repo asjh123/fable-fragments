@@ -67,6 +67,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
 .check { width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; }
 .check.done { background: var(--green); border-color: var(--green); color: var(--paper); }
 
+.inventory-card { margin: 0 0 12px; padding: 18px 20px; display: grid; grid-template-columns: repeat(3, 1fr) auto; align-items: center; gap: 14px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--paper) 90%, transparent); }
+.inventory-card > div { display: flex; flex-direction: column; gap: 3px; }
+.inventory-card strong { font: 700 24px 'Songti SC', 'SimSun', serif; color: var(--green-2); }
+.inventory-card span { color: var(--muted); font-size: 11px; }
+.stock-notice { margin-bottom: 24px; padding: 13px 16px; border-radius: 13px; color: var(--muted); background: rgba(215,168,61,.1); font-size: 12px; line-height: 1.6; }
+
 .library { padding: 14px 0 70px; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 18px; color: var(--muted); font-size: 12px; }
 .section-heading h2 { margin: 0; color: var(--ink); font: 600 25px 'Songti SC', 'SimSun', serif; }
@@ -81,6 +87,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
 .story-foot b { float: right; color: var(--green-2); font-size: 18px; }
 
 .reader-page { width: min(100% - 32px, 760px); padding: 35px 0 60px; }
+.reader-top-actions { display: flex; align-items: center; justify-content: space-between; }
 .back-link { border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 10px 0; }
 .reader-progress { display: flex; gap: 6px; margin: 18px 0 24px; }
 .reader-progress span { flex: 1; height: 3px; border-radius: 4px; background: var(--line); }
@@ -110,6 +117,17 @@ textarea { width: 100%; min-height: 110px; resize: vertical; padding: 14px; bord
 .sources { margin-top: 28px; }
 .sources a { display: block; padding: 12px 0; border-top: 1px solid var(--line); color: var(--green-2); text-decoration: none; line-height: 1.5; }
 .sources small { display: block; color: var(--muted); }
+.feedback-panel { margin-top: 34px; padding-top: 28px; border-top: 1px solid var(--line); }
+.feedback-panel h2 { margin: 4px 0 8px; font: 600 25px/1.45 'Songti SC', 'SimSun', serif; }
+.feedback-ratings { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 18px; }
+.feedback-ratings button, .reason-chips button { min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: transparent; cursor: pointer; }
+.feedback-ratings button.selected, .reason-chips button.selected { border-color: var(--gold); background: rgba(215,168,61,.13); }
+.feedback-details { margin-top: 16px; padding: 16px; border-radius: 14px; background: var(--paper-2); }
+.feedback-details > p { margin-top: 0; color: var(--muted); font-size: 13px; }
+.reason-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.feedback-details textarea { margin-bottom: 12px; background: var(--paper); }
+.feedback-saved { margin: 12px 0 0; color: #55926f; font-size: 12px; }
+.review-flag { margin: 18px 0 0; padding: 12px 14px; border-left: 3px solid #c98553; color: var(--muted); background: rgba(201,133,83,.09); font-size: 12px; line-height: 1.65; }
 
 .settings-page { width: min(100% - 32px, 820px); padding: 55px 0 70px; }
 .settings-page > h1 { margin: 0 0 30px; font: 700 clamp(30px, 5vw, 46px)/1.25 'Songti SC', 'SimSun', serif; }
@@ -125,6 +143,11 @@ textarea { width: 100%; min-height: 110px; resize: vertical; padding: 14px; bord
 .muted { color: var(--muted); font-size: 12px; text-align: right; }
 .privacy-card p { color: var(--muted); line-height: 1.75; }
 .danger-button { color: #ad5d54 !important; border-color: rgba(173,93,84,.35) !important; }
+.preference-list { display: grid; gap: 8px; padding: 0; list-style: none; }
+.preference-list li { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); }
+.preference-list span, .review-list small { color: var(--muted); font-size: 12px; }
+.review-list { margin-top: 18px; padding: 14px; display: grid; gap: 7px; border-radius: 12px; background: rgba(201,133,83,.09); }
+.review-list > span { font-size: 13px; }
 
 .bottom-nav { position: fixed; z-index: 30; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; gap: 4px; padding: 7px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter: blur(18px); box-shadow: 0 12px 40px rgba(31,42,38,.16); }
 .bottom-nav button { min-width: 78px; padding: 8px 14px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 12px; color: var(--muted); background: transparent; cursor: pointer; font-size: 12px; }
@@ -145,6 +168,8 @@ textarea { width: 100%; min-height: 110px; resize: vertical; padding: 14px; bord
   .story-card { min-height: 185px; }
   .completion-line { align-items: flex-start; flex-wrap: wrap; }
   .completion-line small { width: 100%; margin: 0 0 0 36px; }
+  .inventory-card { grid-template-columns: repeat(3, 1fr); }
+  .inventory-card .secondary-button { grid-column: 1 / -1; width: 100%; }
   .paper { border-radius: 20px; }
   .reader-actions { position: sticky; bottom: 78px; padding: 12px; margin: 38px -12px -12px; border: 1px solid var(--line); border-radius: 16px; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(14px); }
   .reader-actions button { flex: 1; }
@@ -152,6 +177,7 @@ textarea { width: 100%; min-height: 110px; resize: vertical; padding: 14px; bord
   .bottom-nav button { min-width: 0; flex: 1; }
   .setting-line { align-items: flex-start; flex-direction: column; }
   .muted { text-align: left; }
+  .feedback-ratings { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { contentKey } from './content'
+import { contentFeedbackPayloadSchema, contentSkippedPayloadSchema } from './feedback'
 
 export const eventTypeSchema = z.enum([
   'FRAGMENT_COMPLETED',
@@ -7,7 +8,9 @@ export const eventTypeSchema = z.enum([
   'CONCEPT_VIEWED',
   'NOTE_SAVED',
   'STORY_STARTED',
-  'STORY_COMPLETED'
+  'STORY_COMPLETED',
+  'CONTENT_FEEDBACK_SUBMITTED',
+  'CONTENT_SKIPPED'
 ])
 
 export const syncStatusSchema = z.enum(['pending', 'synced', 'failed'])
@@ -27,7 +30,18 @@ export const learningEventSchema = z.object({
   schemaVersion: z.literal(1),
   createdAt: z.string().datetime(),
   syncStatus: syncStatusSchema
-}).strict()
+}).strict().superRefine((event, context) => {
+  const schema = event.eventType === 'CONTENT_FEEDBACK_SUBMITTED'
+    ? contentFeedbackPayloadSchema
+    : event.eventType === 'CONTENT_SKIPPED'
+      ? contentSkippedPayloadSchema
+      : null
+  if (!schema) return
+  const parsed = schema.safeParse(event.payload)
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) context.addIssue({ ...issue, path: ['payload', ...issue.path] })
+  }
+})
 
 export type LearningEvent = z.infer<typeof learningEventSchema>
 export type EventType = z.infer<typeof eventTypeSchema>
@@ -38,7 +52,8 @@ const effectiveTypes = new Set<EventType>([
   'CONCEPT_VIEWED',
   'NOTE_SAVED',
   'STORY_STARTED',
-  'STORY_COMPLETED'
+  'STORY_COMPLETED',
+  'CONTENT_FEEDBACK_SUBMITTED'
 ])
 
 export function shanghaiDate(input: Date | string = new Date()): string {

@@ -33,3 +33,27 @@ test('应用壳和已缓存故事在断网后仍能打开', async ({ page, conte
   await expect(page.getByRole('heading', { name: /今天，读一点就很好/ })).toBeVisible()
   await expect(page.getByText('离线使用中')).toBeVisible()
 })
+
+test('反馈离线保存、刷新保留并可换到另一篇未读内容', async ({ page, context }) => {
+  await page.goto('/')
+  await expect(page.getByText('内容库存不足，可以准备下一批内容。这里只提醒，不会自动生成。')).toBeVisible()
+  await page.evaluate(() => navigator.serviceWorker.ready)
+  await page.reload()
+  await page.getByRole('button', { name: /岛上那些会消失的小门/ }).click()
+  for (let index = 0; index < 6; index += 1) await page.getByRole('button', { name: /读完这一段/ }).click()
+  await expect(page.getByRole('heading', { name: '这篇对你来说怎么样？' })).toBeVisible()
+
+  await context.setOffline(true)
+  await page.getByRole('button', { name: '差点意思' }).click()
+  await page.getByRole('button', { name: '内容太浅' }).click()
+  await page.getByRole('button', { name: '保存反馈' }).click()
+  await expect(page.getByText('反馈已保存。')).toBeVisible()
+  await page.reload()
+  await expect(page.getByText('已保存当前评价，可随时修改。')).toBeVisible()
+  await expect(page.getByRole('button', { name: '内容太浅' })).toHaveAttribute('aria-pressed', 'true')
+
+  await context.setOffline(false)
+  await page.getByRole('button', { name: '换一篇' }).click()
+  await expect(page.getByRole('heading', { name: '两个山谷，哪一个会起雾？' })).toBeVisible()
+  await expect(page.getByText('已换一篇，原来的阅读记录仍然保留。')).toBeVisible()
+})
